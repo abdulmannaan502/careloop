@@ -82,3 +82,10 @@ def test_bedrock_path_used_when_configured(care, monkeypatch):
     s = care.daily_summary_for_family()
     assert s["written_by"] == "bedrock" and s["summary"] == "Amma had a calm day."
     assert calls["modelId"] == "amazon.nova-lite-v1:0" and "adherence_percent" in calls["messages"][0]["content"][0]["text"]
+
+
+def test_new_medicine_does_not_count_past_days_as_missed(care, monkeypatch):
+    monkeypatch.setenv("CARELOOP_NOW", "2026-10-18T23:00")
+    care.add_medication("Atorvastatin", "at bedtime", "10mg")
+    days = {d["date"]: d for d in care.adherence_report(3)["days"]}
+    assert not any(m["medication"] == "Atorvastatin" for m in days["2026-10-17"]["missed"])

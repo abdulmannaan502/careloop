@@ -9,6 +9,7 @@ dependencies = [
     "mcp>=2.2",
     "uvicorn>=0.30",
     "boto3>=1.35",
+    "streamlit>=1.40",
 ]
 
 [project.optional-dependencies]

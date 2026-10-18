@@ -127,6 +127,8 @@ class CareLoop:
             "pills_left": pills_left,
             "pills_per_dose": max(1, pills_per_dose),
             "instructions": instructions,
+            # Days before a medicine was added must not count as missed doses.
+            "added_at": (existing or {}).get("added_at") or tp.now().isoformat(),
         }
         self.store.put_medication(self.user, med)
         spoken_times = " and ".join(tp.human_time(t) for t in times)
@@ -348,8 +350,11 @@ class CareLoop:
         taken_slots = {(d["med_id"], d["slot"]) for d in doses}
         scheduled, missed = 0, []
         for m in self._meds():
+            added = datetime.fromisoformat(m["added_at"]) if m.get("added_at") else None
             for t in m["times"]:
                 slot_dt = datetime.combine(day, datetime.strptime(t, "%H:%M").time(), tzinfo=tp.TZ)
+                if added and slot_dt + tp.ON_TIME_WINDOW < added and (m["id"], t) not in taken_slots:
+                    continue  # not on the schedule yet
                 if (m["id"], t) in taken_slots:
                     scheduled += 1
                 elif slot_dt + tp.ON_TIME_WINDOW < now:

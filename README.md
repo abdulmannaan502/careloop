@@ -49,16 +49,29 @@ careloop/
   summary.py     Bedrock family summary (+ template fallback)
   notify.py      SNS family alerts
   daily_job.py   Lambda handler for the nightly summary
+  assistant.py   Alexa+ stand-in for the web demo (Bedrock agent or phrase router)
+  demo_data.py   a realistic past week for demos
+streamlit_app.py      web demo (simulated Alexa+ + family view)
 infra/template.yaml   AWS SAM: DynamoDB, SNS, Lambda, EventBridge schedule
 scripts/              demo conversation client, demo data seeder
 tests/                pytest suite
 ```
 
+## Web demo (simulated Alexa+ experience)
+
+`streamlit_app.py` is a browser version of the Alexa+ conversation. Every message goes through a real MCP client session to the CareLoop server, and the right-hand panel shows the family's view. A demo clock lets you jump to the evening to see missed doses and the family update.
+
+```bash
+streamlit run streamlit_app.py
+```
+
+Set `BEDROCK_MODEL_ID` (plus AWS credentials) and the assistant becomes an Amazon Bedrock tool-use agent that reads the MCP tool list and picks tools itself, the same role Alexa+ plays. Without it, a built-in phrase router is used.
+
 ## Quick start (local, about 2 minutes)
 
 ```bash
 pip install -e ".[dev]"
-python -m pytest -q                          # 7 tests
+python -m pytest -q                          # 8 tests
 python -m careloop.server                    # MCP server on http://localhost:8000/mcp
 ```
 
